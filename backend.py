@@ -308,4 +308,4 @@ async def chat_endpoint(request: ChatRequest):
 
 if __name__ == "__main__":
     # Ensure uvicorn runs on a port different from your tool APIs
-    uvicorn.run("agent:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("backend:app", host="0.0.0.0", port=8000, reload=True)
