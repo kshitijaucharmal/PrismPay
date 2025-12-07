@@ -1,14 +1,33 @@
-from google.adk.tools import AgentTool, FunctionTool, google_search
-from google.adk.agents import Agent
+from google.genai import types, Client
 from google.adk.runners import InMemoryRunner
-from google.genai import types
-
-import os
-import requests
+from google.adk.agents import Agent
+from google.adk.tools import AgentTool, FunctionTool, google_search
+from google.adk.sessions import InMemorySessionService
+from google.adk.runners import Runner
 from typing import Optional
+import requests
+import os
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import asyncio
+import sys
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
+api_key = os.environ.get("GOOGLE_API_KEY")
+if not api_key:
+    print("❌ ERROR: GOOGLE_API_KEY is not set in environment variables.",
+          file=sys.stderr)
+try:
+    genai_client = Client(api_key=api_key)
+except Exception as e:
+    print(f"❌ ERROR: Could not initialize GenAI Client: {e}", file=sys.stderr)
+    sys.exit(1)
 # --- Configuration ---
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = "http://localhost:5000"
 
 # --- 1. Tool Definitions ---
 
@@ -185,3 +204,108 @@ root_agent = Agent(
     ],
     output_key="final_response",
 )
+
+# --- 4. API & Runner Setup (NEW) ---
+APP_NAME = "OneCardBotApp"
+
+# Initialize FastAPI app
+app = FastAPI(title="OneCard GenAI Agent API")
+# --- API Setup ---
+app = FastAPI(title="OneCard GenAI Agent API")
+
+# Initialize Session Service (Global persistence for the API)
+session_service = InMemorySessionService()
+
+# Define Request Model
+
+
+class ChatRequest(BaseModel):
+    user_id: str
+    query: str
+
+
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """
+    Async endpoint that handles session lookup and agent execution.
+    """
+    user_id = request.user_id
+    query_text = request.query
+    session_id = None
+
+    try:
+        # --- 1. SESSION MANAGEMENT (Adapted from your logic) ---
+
+        # Check for existing sessions for this user
+        existing_sessions = await session_service.list_sessions(
+            app_name=APP_NAME,
+            user_id=user_id,
+        )
+
+        if existing_sessions and len(existing_sessions.sessions) > 0:
+            # Resume existing session
+            session_id = existing_sessions.sessions[0].id
+            print(f"DEBUG: Resumed session: {session_id}")
+        else:
+            # Create new session
+            new_session = await session_service.create_session(
+                app_name=APP_NAME,
+                user_id=user_id,
+            )
+            session_id = new_session.id
+            print(f"DEBUG: Created new session: {session_id}")
+
+        # --- 2. RUNNER INITIALIZATION ---
+
+        # Initialize Runner with the service
+        runner = Runner(
+            agent=root_agent,
+            app_name=APP_NAME,
+            session_service=session_service,
+        )
+
+        # --- 3. CONSTRUCT CONTENT ---
+
+        user_prompt = f"""User Query: "{query_text}" """
+        content = types.Content(
+            role="user",
+            parts=[types.Part(text=user_prompt)],
+        )
+
+        # --- 4. EXECUTE AGENT ASYNC ---
+        print(f"Agent running for user: {user_id}...", file=sys.stderr)
+        final_text = ""
+
+        # This replaces your 'call_agent_async' wrapper.
+        # We await the runner.run() method directly.
+        async for event in runner.run_async(
+            session_id=session_id,
+            user_id=user_id,
+            new_message=content
+        ):
+            # We filter events to find the text response.
+            # Depending on your exact ADK version, 'is_final_response' might be a method or property.
+            # We check both the flag and the content role.
+
+            # Check for standard text response
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        # Append text chunks (some versions stream parts)
+                        final_text += part.text
+
+        # --- 5. RETURN RESPONSE ---
+
+        return {
+            "response": final_text.strip(),  # Extract text from response object
+            "session_id": session_id,
+            "user_id": user_id
+        }
+
+    except Exception as e:
+        print(f"Error processing request: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    # Ensure uvicorn runs on a port different from your tool APIs
+    uvicorn.run("agent:app", host="0.0.0.0", port=8000, reload=True)
