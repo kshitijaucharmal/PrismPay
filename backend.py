@@ -1,3 +1,4 @@
+from fastapi.middleware.cors import CORSMiddleware  # <--- 1. Import this
 from google.genai import types, Client
 from google.adk.runners import InMemoryRunner
 from google.adk.agents import Agent
@@ -208,10 +209,15 @@ root_agent = Agent(
 # --- 4. API & Runner Setup (NEW) ---
 APP_NAME = "OneCardBotApp"
 
-# Initialize FastAPI app
-app = FastAPI(title="OneCard GenAI Agent API")
 # --- API Setup ---
 app = FastAPI(title="OneCard GenAI Agent API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (for development)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (POST, GET, OPTIONS, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Initialize Session Service (Global persistence for the API)
 session_service = InMemorySessionService()
