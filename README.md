@@ -2,6 +2,27 @@
 
 An AI-powered credit card assistant with a Python backend and React.js frontend, featuring RAG (Retrieval Augmented Generation) and Google ADK agent capabilities.
 
+## 🖼️ Screenshots
+
+> **Note:** To display the screenshots, please add the following image files to the `docs/images/` directory:
+> - `login-screen.png` - Login interface
+> - `chat-empty-state.png` - Main chat interface (empty state)
+> - `chat-active.png` - Active chat conversation
+
+### Login Screen
+![Login Screen](docs/images/login-screen.png)
+*Secure login interface with user authentication - Login with any customer ID (e.g., `cust_1015a13f`) and password `1234`*
+
+### Chat Interface - Empty State
+![Chat Interface Empty State](docs/images/chat-empty-state.png)
+*Clean, intuitive chat interface with suggested action cards for quick access to common tasks*
+
+### Chat Interface - Active Conversation
+![Chat Interface Active](docs/images/chat-active.png)
+*AI assistant in action - helping with expense analysis, transaction categorization, and EMI conversion*
+
+---
+
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
@@ -152,6 +173,14 @@ Once all services are running:
 * **Backend API:** http://localhost:8000/docs
 * **Mock API:** http://localhost:5000/docs
 
+### Getting Started
+
+1. **Login:** Use any customer ID (e.g., `cust_1015a13f`) and password `1234` to access the dashboard
+2. **Start Chatting:** The AI assistant will help you with various credit card operations
+3. **Try Features:** Use the suggested action cards or type your queries directly
+
+![Login Screen](docs/images/login-screen.png)
+
 ---
 
 ## 📁 Project Structure
@@ -213,6 +242,26 @@ GOOGLE_API_KEY=your_api_key_here
 - ✅ Requires `customer_id` for account-specific queries
 - ✅ Confirms before money movement actions
 - ✅ Empathetic handling for high-risk customers
+
+### User Interface
+
+The application features a modern, intuitive interface with:
+
+**Main Chat Interface:**
+- Clean, responsive design with dark/light theme support
+- Suggested action cards for quick access to common tasks
+- Real-time chat with markdown support
+- Voice input/output capabilities
+
+![Chat Interface](docs/images/chat-empty-state.png)
+
+**Active AI Assistance:**
+- Natural language understanding for complex queries
+- Transaction analysis and categorization
+- EMI conversion assistance
+- Contextual help and guidance
+
+![Active Chat](docs/images/chat-active.png)
 
 ---
 
