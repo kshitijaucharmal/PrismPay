@@ -195,9 +195,6 @@ FPL/
 ├── docker-compose.yml     # Docker setup
 └── logs/                  # Application logs
 ```
-
-> 💡 **Want a better structure?** See [STRUCTURE_PROPOSAL.md](./STRUCTURE_PROPOSAL.md) for a more organized layout.
-
 ---
 
 ## 🛠️ Tech Stack
